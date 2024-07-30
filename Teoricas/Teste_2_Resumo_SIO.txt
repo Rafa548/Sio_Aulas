@@ -1,0 +1,389 @@
+Cifras assimetricas
+
+  ->permitem confidencialidade sem necessidade de troca de segredos, integridade a autenticar os conteudos e autoria atraves de assinaturas digitais
+
+  ->interaçoes com n interlucutores sao apenas necessarias n chaves (com simetrica seriam n^2)
+
+  ->Baixo desempenho (logo apenas usadas para pequenos conjuntos de dados nunca ficheiros)
+
+Problemas
+
+é preciso gatantir a distribuiçao de chaves publicas (estas devem ser renovadas e comunicadas periodicamente)
+
+Confidencialidade a autenticidade
+
+entidade encriptar um texto para outra entidade (cifra com base na public key da segunda e a segunda decifra com a sua private key )
+(isto garante confidencialidade mas o recetor nao consegue identificar quem enviou o criptograma uma vez que todos tÊm acesso ás chaves publicas)
+
+para garantir autenticidade podemos inverter o processo onde a emissora encripta com a sua private key e a recetora decifra com a public key da anterior
+isto resolve o problema da autenticidade mas tambem perde a confidencialidade porque a qualuqer entidade pode decifrar o criptoograma
+
+de forma a garantir autenticidade e confidencialidade devem ser utilizados ambos
+
+funcionamento é baseado em problemas matematicos de elevada complexidade (tudo é convertido para numeros inteiros)
+
+RSA
+fatorizaçao de grandes numeros e calculos de algoritmos discretos (P^e mod n) etc...
+
+ElGamal
+parecido com o anterior mas apenas baseado no calculo de logaritmos discretos
+
+Diffie-Hellman (usado em comunicaçoes)
+
+usa chaves temporarias (validas apenas por uma sessao)
+
+valor random (a) calculo a^a mod q vai para o destino (ya), o destino tem uma valor random b calcula o yb com o a^b mod q envia o yb de volta
+depois em cada lado é feito o calculo final com ambos e estando este feito acabam com o mesmo valor
+
+isto é seguro porque mesmo que um seja intercetado é necessario saber os dados da outra parte  (regra geral)
+
+no entanto é vulneravel a ataques man in the middle que fica  receber ambos e fica com toda a informaçao necessaria
+
+este metodo é deterministico valores com a mesma chave geram o mesmo criptograma
+
+Soluçao otima -> OEAP (Optimal asymetric encryption padding)
+
+-----
+Cifra hibrida (velociade das chaves simetricas + chaves publicas das assimetricas)
+
+cifra o texto com uma chave gerada de forma aleatoria, cifra essa chave com a public key do destinatario envia os dois criptogramas 
+
+o destinatario assim pode decifrar o segundo criptograma com a sua chave privada obtendo a chave utilizada na cifra simtrica do texxto que vai usar para o decifrar
+
+---
+Funçao de sintese (cria um resultado de imensao constante para entradas de dimensao variavel)
+
+este resultado é como uma impressaso digital que identifica de forma unica a entrada
+
+por serem funçoes sde dispersao criptofgraficas unidirecionais resultados muito distintos paara entradas similares e que nao podem ser revertidos sao obtidos
+
+para serem robustas devem ter 3 propriedades
+
+resistencia a desscoberta do texto (dificil encontra o que gerou a sintese)
+
+resistencia a descoberta do segundo texto (dificil encontrar texto diferente com a mesma sintese)
+
+resistencia a colisao (dificil encontrar dois textos que mapeiem para a mesma sintese)
+
+é feito com compressao
+
+MIC
+
+funçoes de sintese normalmente sao aplicadas na deteçao de erros de comunicaçao e armazenamento
+para tal quando é enviada uma mensagem encriptada deve enviar-se tambem uma sintese do programa (MIC)
+
+MAC=Sintese(C)
+
+o recetor por sua vez calcula a sintese edo programa e compara com o mic recebido
+se for igual é garantido que nao existira falhas
+
+este metodo nao protege contra alteraçoes deliberadas 
+
+
+Mac (message autentication code)
+
+parecido com o de cima mas a sintese é a concatenaçao do prog com uma chave que apenas o remetente e o destinatario conhecem
+encryt then mac isto é bom porque se algum atacante intercetar como nao tem conhecimento da chave usada para o mac nao vai ter como fazer 
+um valido
+
+
+Assinaturas digitais (usa mais do mesmo combinaçao de chaves publicas e privadas)
+
+Derivaçao de chaves (bom exemplo palavras passe de humanos onde queremos aumentar a complexidade para ter mais segurança (isto por exemplo aumenta o tamanho da mesma dificultado brute force attacks))
+
+a sua implementaçao requer uma sal que torna a geraaçao unica (random), uma problema complexo e de grande complexidade
+
+Nas aulas foi mencionado o PBKDF2 (este executa a funçao de sintese para cada bloco com o sal paara criar uma sentise da palavra passe com uma 
+determinada dimensao varias vezes (numero de iteraçoes)
+
+existem variaçoes para aumentar a dificultade computacional ou a dificuldade de armazenamento 
+
+------------------------------------------
+5- Gestao de chaves assimetricas
+
+O inicio tem alguma bullshit pensar no que faz sentido (talvez ler dnv)
+
+Modelo pem  (Privacy-enhaced Electronic Email)
+pai (IPRA) -> certifica os filhos (PCAs) > certificam as CA que emitem os certificados finais
+
+Modelo PGP (Pretty Good Privacy)
+
+existe uma redde de confiança ou seja (eu confio no q validei e no que esse validou se esse validou apenas parcialmente confio 
+parcialmente se nao validei nada nao conheço)
+
+4 niveis
+ultimate (os q eu fiz)
+complete (os que eu fiz fez)
+marginal (os que eu fiz fez um pouco)
+untrusted (nao fiz nem conheço que fez)
+
+
+
+-----------------------------------------
+6- autenticaçao
+
+A autenticaçao leva á autorizaçao
+
+direta -> nunca deve ser guardada a password em claro
+Problemas propricio a atazques de brute force se nao existirem mecanismos para o impedir, tranmissao em canais abertos é inseguro
+
+direta com biometria ->sem roubo
+pode revelar informaçao pessoal e como é unica da problemas para permitir users diff etc fotos dao replace a facial id etc
+
+direta senhas descartaveis-> bom porque é uso unico ent nao tem stress se for leaked
+mau porque é preciso ter como ver a senha/armazenar a mesma
+
+desafio-resposta->smart cards
+
+Protocolos
+PAP-validaçao direta do par UID/password
+
+Chap-> aproximaçao por desafio resposta
+
+S/key->aproximaçao desafio resposta guarda a raiz a ultima OTP e o seu indice
+envia a raiz e o indice, etc ...
+
+GSM aproxiaçao de desafio-resposta com basse num segredo partilhado
+
+Usado nos sim cards
+-------------------------------------------
+
+7- Segurança em redes
+
+Redes sem fios
+
+comunicaçoes em broadcast para o meio tudo recebe tudo e a propria maquina é a responsavel por ver se é o destinatario
+desta forma é bastante facil a atacantes dentro da rede intercetarem pacotes sem serem detetados, ou mesmo interferir nas comunicaçoes
+com ataques Dos
+
+é possivel mitigar estes ataques ao nivel fisico ao:
+
+codificar o canal com uma key que apenas os membros da rede têm acesso
+
+é possivel evitar que o canal seja monopolzado por transmissores atraves de politicas de acesso ao meio fisico
+
+ (exemplo Bluethooth fhss divide os dados em pacotes e tranmite em 79 freq diferentes em ordem pseudo random e o wifi )
+
+ao nivel dos dados -> cifra de cabeçalhos e utilizaçao de endereços temporarios, evitam que os atacantes compreendam os dados
+e construam perfis de consumo para os enderaços mac (sem estas proteçoes um registo permite associar um user com base no seu perfil
+e por exemplo fornecer publicidade direcionada)
+
+IEEE 802.11
+
+Standart que rege o WIFI
+
+Estaçao (STA)-> Dispositivo que se liga á rede sem fios, com um Mac (identificador unico)
+Ponto de acesso (AP)-> Permite a ligaçao sem fios, interligando a outras redes
+Rede sem fios-> Stas e Aps assocados entre si comunicando com sinais de radio
+
+Organizaçao
+
+Basic Service SET (BSS) rede formada por Stas ligadas a um AP
+Extended service SET (ESS) varias BSS ligadas por um Distribution System (DS)
+Service Set ID (SSID) identificador da rede fornecido pelo bss ou ess (pode ser diferente na mesma infraestrutura)
+
+no acesso á rede o cliente transita entre vários estados que combinam a autenticação e a associação (autorização)
+
+existem varios tipos de mensagens de gestao
+
+Beacon (especie de keep alive é enviado 10 vezes por segundo e permite aos clientes detetarem que a rede existe)
+Probe request/response (para aps escondidos (nao emitem beacons) o clinete faz um probe request a perguntar se existe um ap com
+o ssid pedido, a resposta é um prope response
+Authentication request/response | Deauth
+Re Association request/response | Deassociation 
+
+Existem tambem mensagens de contrlo (ACK) e mensagens de dados
+
+WEP (Wired equivlent privacy)
+
+Pode funcionar em dois modos autenticaçaoo unilateral e facultativa com recurso ao algoritmo RC4
+
+Open System Autenticatio (OSA) sem qualquer autenticaçao
+Shared Key Authentication (SKA) Autenticaçao unilateral da STA com chave distinta por cliente com base no seu endereç MAC. Dados
+cifrados mas de forma não muito complexa
+
+WPA (Wired Equivalent Privacy)
+
+Este tipo de rede usa uma key diferente em cada mensagem e implementa aum controlo de integridade robusto, e controlo ded IVs
+Usa o protocolo TKIP, na partica é igual ao WPE, apenas usa o ditos mecanismos mais complexos de variaçao de chaves e controlo
+Brute force continua a ser possivel
+
+
+WPA2 
+
+mecanismos avançados para proteçao de msgs e autenticaçao
+usa AES
+
+Processo de autenticaçao
+as chaves usadas na encriptçao sao negociadas
+
+tem semelhanças com diffie hellman
+Pairwise Master key -> usa o pbkdf2 para a obter ela é a sintese da pass com o ssid
+
+em redes grandes usa-se o iee 802.1x -> chaves diff para todos os users mas essas chaves funcionam em todos os aps da rede
+
+IEEE hieraraquia das chaves
+
+MSK->resultado de um processo de EAP na arquitetura
+PSK->Chave de longo ter,o partilhada entre SA e STA na arquitetura SOHO
+PMK->Chave usada ppara autenticaçao mutua entre o AP e a STA, usa o PBKDF2
+PTK->Chave para proteger interaçoes entre o AP e a Sta
+
+EAP (existem varios o EAP-MD5 é vulneravel a ataques man in the middle e de dicionario)
+PEAP (é feito um tunel seguro onde se expoem a identidade no inicio antes da criaçao do mesmo)
+
+
+Problemas de segurança (ver depois secalhar)
+
+
+-------------------------------------------
+10
+
+Armazenamento
+
+O armazenamento tem varios problemas associados tas com avarias,lentidao no seu acesso ou os acidentes que levam á perda total de dados
+
+os dois primeiros são garantidos sendo as avarias nao uma questao de tempo
+
+Para os evitar:
+
+Copias de segurança (copias periodicas dos dados)
+	->Variam no espaço que ocupam e no tempo que levam a recuperar
+
+Completos (recup rapida, ocupa muito espaço)
+
+Incrementais (diff desde o ultimo backup, mais lento e ocupa muito menos espaço)
+
+O armazenamento é feito num disco adicional (nao confundir com disco externo)
+
+deve ser sufeciente para dar fix em caso de catostrofes e comemplar o enquadramento da expraçao de dados
+
+Compressao (Zip)
+Cópia seletiva (apenas alguns ficheiros por ex apenas os files do user)
+
+Deduplicação (ficheiros duplicados levam replacement)
+
+Niveis dos backups
+
+Aplicacional (Extração dos dados da aplicaçao)
+
+Ficheiros (Copia dos ficherios individuais)
+
+Sistema de ficheiros (pensar no windows com a recuperaçao deles)
+
+Blocos (nsei)
+
+Local da copia
+
+Mesmo volume ou sistema (por exemplo o git bom para arecuperaçao rapida de files mau para avarias)
+
+Outro sistema na mesma infraestrutura
+	->recuperaçao rapida (mais  lenta q o anterior) e protege contra falhas isoladas
+
+Sistema remoto (off-site)
+	->Stored in a safe place
+
+Seleçao do equipamento
+
+MTBF (Mean Time between Failures)
+
+Mais desempenho - menos capacidade !!!!!!! pensar hd vs ssd
+
+Ambientes controlados
+
+Temperatura e humidade influenciam a durabilidade
+
+Armazenamento redundante
+
+Raid (Redudundant Array of Inexpensive Drivers)
+	->combinaçao logica de discos de forma a que possamos otimizar o sistema de 
+armazenamento com o objetivo de oferecer mais redundancia e/ou velocidade)
+
+É uma soluçao de baixo custo que se caracteriza pela utilizaçao de hardware barato e falivel nao substitui os backups
+
+Raid 0 ((striping) Velocidade)
+
+varios discos cada um fica com um pedaço de informaçao podem ser todos acedidos em pararelo aumenta muito a velocidade de 
+acessos
+A probabilidade de perda tambem aumento á medida que o numero de dispositivos aumenta
+
+
+Raid 1 ((mirroring) Tolerancia a falhas)
+Informaçao é duplicada pelos discos, com escrita sincronizada e leitura com comparação ou apenas de um disco
+
+diminui a prob de perda de informaçao
+com apenas um disco a veloc de leitura aumenta
+desperdicio de armazenamento
+
+Raid 0+1 (Desempenho e torelancia a falhas)
+
+combina as anteriores de forma a oferecer desempenho e tolerancia a falhas varios raid 0 geridos pelo raid 1
+
+
+Raid 4 Desempenho e tolearancia a falhas
+
+varios discos dados sao divididos entre eles um deles mantem sempre a todos os dados em caso de falha de algum dos discos os outros
+compensam (minimo 3 discos 2 para divisao 1 para paridade)
+
+Raid 5 Desempenho e tolerancia a falhas
+
+Parecido com o de cima mas agora inves de existir um disco para guardar todos os blocos completos cada disco guarda um bloco completo de todos eles juntos
+
+Raid 6 Desempenho e tolearancia a falhas
+
+duplicaçao dos blocos de paridade desta forma pode existir falha de dois discos
+minimo 4 discos e paridade 2 dados
+
+
+Dominios de armazenamento (Nao têm backups)
+
+normalmente servidores e os sistemas de armazenamento nao armazenam os dados diretamente, mas fazem uso de dominios de armazenamento redundantes
+como o RAID ligaos em rede
+
+NAS (Netwwork attatched Storage) (sistema em rede com varios RAID)
+SAN (Storage Area Network) (conjunto de sistemas em rede com qualquer esquema de redundancia)
+
+NAS soluçao de pequena escala SAS (pode atingir milhoes em preço)
+
+
+Confidencialidade do armazenamento
+
+Armazenamento distribuido é problematico, exige um numero maior de admins muitass vezes anonimos com autenticaçao remota
+isto pode revelar-se mais dificil e complexo
+
+A soluçao para estes problemas é a cifra de informaçao
+
+continua com alguns problemas como no caso de perda das chaves, dificuladde de partilha de files, espaço ocupado, interferencia em
+tarefas comuns de administraçao (para partilhar é necessario mandar o file e a chave, ao encriptar o mesmo file duas vezes nao obtemos o mesmo)
+
+Niveis de cfra de dados
+
+Nivel aplicacional (a aplicaçao escolhe)
+	->rar, zip etc
+
+Sistema de ficheiros (faz automaticamente de forma que ao haver escritas/leituras so dá se tiver as chaves corretas)
+
+Nivel do volume (pensar no bitlocker do windows bloqueia o volume/partiçao sem a chave correta transsparente ao SO)
+
+Nivel do dispositivo
+	o disco trata do assunto é feito no boot a cifra é tranparente para o SO (tem mais explicaçao mas idk)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
